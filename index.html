@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ENet Reference Explorer</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1b2030;--mute:#5b6478;--line:#dfe3ee;--acc:#3b6cf6;--acc2:#e8eeff;--code:#f0f2f8;--ok:#15803d;--warn:#b45309;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10131c;--card:#181c28;--text:#e6e9f2;--mute:#9aa3b8;--line:#2a3042;--acc:#7da2ff;--acc2:#1f2a4a;--code:#222839;--ok:#4ade80;--warn:#fbbf24;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10131c;--card:#181c28;--text:#e6e9f2;--mute:#9aa3b8;--line:#2a3042;--acc:#7da2ff;--acc2:#1f2a4a;--code:#222839;--ok:#4ade80;--warn:#fbbf24;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:22px 18px 10px;max-width:1100px;margin:0 auto}
+h1{margin:0;font-size:26px}h1 span{color:var(--acc)}
+.sub{color:var(--mute);margin:4px 0 0}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 18px;border-bottom:1px solid var(--line)}
+.bar-in{max-width:1100px;margin:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--text);padding:7px 13px;border-radius:999px;cursor:pointer;font:inherit}
+.tab.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.tab small{opacity:.75;margin-left:4px}
+input[type=search]{flex:1;min-width:180px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit}
+main{max-width:1100px;margin:16px auto;padding:0 18px 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.card h3{margin:0 0 4px;font:600 15px ui-monospace,Menlo,Consolas,monospace;color:var(--acc);word-break:break-all}
+.badge{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;background:var(--acc2);color:var(--acc);margin-right:6px}
+.mute{color:var(--mute);font-size:13px}
+.desc{margin:8px 0}
+.sc{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+td,th{text-align:left;padding:4px 8px 4px 0;border-top:1px solid var(--line);vertical-align:top}
+td:first-child{color:var(--mute);font-family:ui-monospace,Menlo,Consolas,monospace;white-space:nowrap}
+td:nth-child(2){font-family:ui-monospace,Menlo,Consolas,monospace;white-space:nowrap}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}
+pre{background:var(--code);padding:10px;border-radius:8px;overflow-x:auto;font-size:12.5px;margin:8px 0 0}
+.sec{margin:22px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;margin:2px 3px 0 0;font:12px ui-monospace,Menlo,Consolas,monospace;cursor:pointer;color:var(--acc)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0}
+.flow .n{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font:13px ui-monospace,Menlo,Consolas,monospace}
+.flow .a{color:var(--mute)}
+.empty{color:var(--mute);padding:30px;text-align:center}
+.val{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--ok)}
+.row{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:12px;margin-top:12px}
+@media(max-width:760px){.row{grid-template-columns:1fr}}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:7px 14px;border-radius:8px;cursor:pointer;font:inherit}
+.btn.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+.lane{position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0 4px}
+.node{width:42%;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
+.node b{display:block;margin-bottom:6px}
+.line{position:absolute;left:21%;right:21%;top:36px;border-top:2px dashed var(--line)}
+.dot{position:absolute;top:28px;width:16px;height:16px;border-radius:50%;background:var(--acc);left:calc(21% - 8px)}
+.st{display:inline-block;font:11px ui-monospace,monospace;padding:1px 7px;margin:2px 2px 0 0;border-radius:999px;border:1px solid var(--line);color:var(--mute)}
+.st.on{background:var(--ok);color:#fff;border-color:var(--ok)}
+.log{max-height:430px;overflow:auto}
+.li{padding:7px 9px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer;background:var(--card);font-size:13px}
+.li.on{border-color:var(--acc);background:var(--acc2)}
+.li.fut{opacity:.45}
+textarea{width:100%;min-height:70px;background:var(--code);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font:12.5px ui-monospace,Menlo,Consolas,monospace}
+.hx{font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;color:var(--ok)}
+</style>
+</head>
+<body>
+<header>
+  <h1>📡 <span>ENet</span> Reference Explorer</h1>
+  <p class="sub">Reliable UDP networking library (written in C, used from C++). Based on ENet 1.3.x. Search or click through everything.</p>
+</header>
+<div class="bar"><div class="bar-in">
+  <div class="tabs" id="tabs"></div>
+  <input type="search" id="q" placeholder="Search name or description…">
+</div></div>
+<main id="out"></main>
+
+<script>
+// ---------- DATA ----------
+// Data structures: [name, kind, header, description, fields[[type,name,desc]]]
+const STRUCTS = [
+["ENetAddress","struct","enet.h","IP address + port of a host or peer.",[["enet_uint32","host","IPv4 address (network byte order)"],["enet_uint16","port","Port number (host byte order)"]]],
+["ENetPacket","struct","enet.h","A message you send or receive. Reference counted.",[["size_t","referenceCount","Internal use: how many owners"],["enet_uint32","flags","ENetPacketFlag bitmask"],["enet_uint8 *","data","Payload bytes"],["size_t","dataLength","Payload size"],["ENetPacketFreeCallback","freeCallback","Called when packet is freed"],["void *","userData","Your own pointer"]]],
+["ENetHost","struct","enet.h","A local endpoint (server or client). Owns the socket and all peers.",[["ENetSocket","socket","UDP socket"],["ENetAddress","address","Bound address"],["enet_uint32","incomingBandwidth","Downstream limit (0 = unlimited)"],["enet_uint32","outgoingBandwidth","Upstream limit (0 = unlimited)"],["enet_uint32","bandwidthThrottleEpoch","Last throttle time"],["enet_uint32","mtu","Max packet size on the wire"],["enet_uint32","randomSeed","For connect IDs"],["int","recalculateBandwidthLimits","Flag"],["ENetPeer *","peers","Array of peer slots"],["size_t","peerCount","Number of slots"],["size_t","channelLimit","Max channels per peer"],["enet_uint32","serviceTime","Time of last service call"],["ENetList","dispatchQueue","Peers with events waiting"],["int","continueSending","Internal send loop flag"],["size_t","packetSize","Current outgoing datagram size"],["enet_uint16","headerFlags","Outgoing header flags"],["ENetProtocol[32]","commands","Outgoing command buffer"],["size_t","commandCount","Commands queued"],["ENetBuffer[65]","buffers","Scatter/gather send buffers"],["size_t","bufferCount","Buffers used"],["ENetChecksumCallback","checksum","Optional checksum (e.g. enet_crc32)"],["ENetCompressor","compressor","Optional compressor"],["enet_uint8[4096]","packetData[2]","Receive scratch space"],["ENetAddress","receivedAddress","Sender of last datagram"],["enet_uint8 *","receivedData","Last datagram bytes"],["size_t","receivedDataLength","Last datagram size"],["enet_uint32","totalSentData","Stats: bytes sent"],["enet_uint32","totalSentPackets","Stats: datagrams sent"],["enet_uint32","totalReceivedData","Stats: bytes received"],["enet_uint32","totalReceivedPackets","Stats: datagrams received"],["ENetInterceptCallback","intercept","Raw packet hook"],["size_t","connectedPeers","Peers in connected state"],["size_t","bandwidthLimitedPeers","Peers with bandwidth limits"],["size_t","duplicatePeers","Max peers per IP (default 7)"],["size_t","maximumPacketSize","Max packet accepted"],["size_t","maximumWaitingData","Max data buffered"]]],
+["ENetPeer","struct","enet.h","A remote connection (one per connected client/server).",[["ENetListNode","dispatchList","Node in host dispatch queue"],["ENetHost *","host","Owning host"],["enet_uint16","outgoingPeerID","ID the remote uses for us"],["enet_uint16","incomingPeerID","Our ID for it"],["enet_uint32","connectID","Random connect ID"],["enet_uint8","outgoingSessionID","Session ID out"],["enet_uint8","incomingSessionID","Session ID in"],["ENetAddress","address","Remote address"],["void *","data","Your own pointer, free to use"],["ENetPeerState","state","Connection state"],["ENetChannel *","channels","Channel array"],["size_t","channelCount","Number of channels"],["enet_uint32","incomingBandwidth","Remote downstream limit"],["enet_uint32","outgoingBandwidth","Remote upstream limit"],["enet_uint32","incomingBandwidthThrottleEpoch","Throttle bookkeeping"],["enet_uint32","outgoingBandwidthThrottleEpoch","Throttle bookkeeping"],["enet_uint32","incomingDataTotal","Bytes received this epoch"],["enet_uint32","outgoingDataTotal","Bytes sent this epoch"],["enet_uint32","lastSendTime","Last send timestamp"],["enet_uint32","lastReceiveTime","Last receive timestamp"],["enet_uint32","nextTimeout","When the next timeout check fires"],["enet_uint32","earliestTimeout","Oldest unacked send"],["enet_uint32","packetLossEpoch","Loss stats epoch"],["enet_uint32","packetsSent","Packets sent this epoch"],["enet_uint32","packetsLost","Packets lost this epoch"],["enet_uint32","packetLoss","Mean loss (scaled by ENET_PEER_PACKET_LOSS_SCALE)"],["enet_uint32","packetLossVariance","Loss variance"],["enet_uint32","packetThrottle","Current throttle (0..limit)"],["enet_uint32","packetThrottleLimit","Throttle ceiling"],["enet_uint32","packetThrottleCounter","Throttle counter"],["enet_uint32","packetThrottleEpoch","Throttle epoch"],["enet_uint32","packetThrottleAcceleration","Step up"],["enet_uint32","packetThrottleDeceleration","Step down"],["enet_uint32","packetThrottleInterval","Evaluation interval ms"],["enet_uint32","pingInterval","Ping interval ms"],["enet_uint32","timeoutLimit","Retransmit count before timing out"],["enet_uint32","timeoutMinimum","Min ms before timeout"],["enet_uint32","timeoutMaximum","Max ms before timeout"],["enet_uint32","lastRoundTripTime","Last RTT sample"],["enet_uint32","roundTripTime","Smoothed RTT"],["enet_uint32","roundTripTimeVariance","RTT variance"],["enet_uint32","mtu","Negotiated MTU"],["enet_uint32","windowSize","Reliable window size"],["enet_uint32","reliableDataInTransit","Unacked reliable bytes"],["enet_uint16","outgoingReliableSequenceNumber","Next reliable seq out"],["ENetList","acknowledgements","Pending acks to send"],["ENetList","sentReliableCommands","Awaiting ack"],["ENetList","sentUnreliableCommands","Sent unreliable"],["ENetList","outgoingCommands","Queued to send"],["ENetList","dispatchedCommands","Queued for the app"],["enet_uint16","flags","Peer flags"],["enet_uint32","eventData","Data for connect/disconnect events"],["size_t","totalWaitingData","Buffered incoming bytes"]]],
+["ENetEvent","struct","enet.h","What enet_host_service() hands back to you.",[["ENetEventType","type","NONE / CONNECT / DISCONNECT / RECEIVE / DISCONNECT_TIMEOUT"],["ENetPeer *","peer","Peer that caused the event"],["enet_uint8","channelID","Channel (RECEIVE only)"],["enet_uint32","data","Connect/disconnect data"],["ENetPacket *","packet","Packet (RECEIVE only). You must destroy it."]]],
+["ENetChannel","struct","enet.h","Independent ordered stream inside a peer.",[["enet_uint16","outgoingReliableSequenceNumber","Next reliable seq out"],["enet_uint16","outgoingUnreliableSequenceNumber","Next unreliable seq out"],["enet_uint16","usedReliableWindows","Bitmask of windows in use"],["enet_uint16[16]","reliableWindows","Per-window counters"],["enet_uint16","incomingReliableSequenceNumber","Last reliable seq in"],["enet_uint16","incomingUnreliableSequenceNumber","Last unreliable seq in"],["ENetList","incomingReliableCommands","Reorder queue (reliable)"],["ENetList","incomingUnreliableCommands","Reorder queue (unreliable)"]]],
+["ENetCallbacks","struct","callbacks.h","Custom memory allocator hooks.",[["void *(*)(size_t)","malloc","Allocator"],["void (*)(void *)","free","Deallocator"],["void (*)(void)","no_memory","Called on allocation failure"]]],
+["ENetCompressor","struct","enet.h","Pluggable packet compression.",[["void *","context","Your state"],["size_t (*)(...)","compress","Compress buffers"],["size_t (*)(...)","decompress","Decompress data"],["void (*)(void *)","destroy","Free context"]]],
+["ENetBuffer","struct","win32.h / unix.h","Scatter/gather buffer for sockets.",[["void *","data","Pointer (unix: iov_base)"],["size_t","dataLength","Length (unix: iov_len)"]]],
+["ENetList / ENetListNode","struct","list.h","Intrusive circular doubly linked list used everywhere.",[["ENetListNode *","next","Next node"],["ENetListNode *","previous","Previous node"],["ENetListNode","sentinel","List head (ENetList)"]]],
+["ENetVersion","typedef","enet.h","enet_uint32 packed as (major<<16)|(minor<<8)|patch.",[]],
+["ENetSocket","typedef","unix.h / win32.h","int on Unix, SOCKET on Windows.",[]],
+["ENetSocketSet","typedef","unix.h / win32.h","fd_set for enet_socketset_select().",[]],
+["ENetAcknowledgement","struct","protocol.h/enet.h","Pending ack for a received reliable command.",[["ENetListNode","acknowledgementList","List node"],["enet_uint32","sentTime","When it was received"],["ENetProtocol","command","Command to ack"]]],
+["ENetOutgoingCommand","struct","enet.h","Command waiting to be sent or acked.",[["ENetListNode","outgoingCommandList","List node"],["enet_uint16","reliableSequenceNumber","Reliable seq"],["enet_uint16","unreliableSequenceNumber","Unreliable seq"],["enet_uint32","sentTime","Send timestamp"],["enet_uint32","roundTripTimeout","Retransmit timeout"],["enet_uint32","queueTime","Queued time"],["enet_uint32","fragmentOffset","Fragment offset"],["enet_uint16","fragmentLength","Fragment length"],["enet_uint16","sendAttempts","Resend count"],["ENetProtocol","command","Wire command"],["ENetPacket *","packet","Payload"]]],
+["ENetIncomingCommand","struct","enet.h","Received command waiting for ordering/reassembly.",[["ENetListNode","incomingCommandList","List node"],["enet_uint16","reliableSequenceNumber","Reliable seq"],["enet_uint16","unreliableSequenceNumber","Unreliable seq"],["ENetProtocol","command","Wire command"],["enet_uint32","fragmentCount","Total fragments"],["enet_uint32","fragmentsRemaining","Still missing"],["enet_uint32 *","fragments","Bitmask of received fragments"],["ENetPacket *","packet","Payload being assembled"]]],
+["ENetPeerState","enum","enet.h","Connection state machine.",[["0","DISCONNECTED",""],["1","CONNECTING",""],["2","ACKNOWLEDGING_CONNECT",""],["3","CONNECTION_PENDING",""],["4","CONNECTION_SUCCEEDED",""],["5","CONNECTED","Normal operating state"],["6","DISCONNECT_LATER","Disconnect after queue drains"],["7","DISCONNECTING",""],["8","ACKNOWLEDGING_DISCONNECT",""],["9","ZOMBIE",""]]],
+["ENetEventType","enum","enet.h","Event kinds from enet_host_service().",[["0","ENET_EVENT_TYPE_NONE","Nothing happened"],["1","ENET_EVENT_TYPE_CONNECT","Peer connected"],["2","ENET_EVENT_TYPE_DISCONNECT","Peer disconnected"],["3","ENET_EVENT_TYPE_RECEIVE","Packet arrived"],["4","ENET_EVENT_TYPE_DISCONNECT_TIMEOUT","Peer timed out (1.3.18+)"]]],
+["ENetPacketFlag","enum","enet.h","Bit flags for enet_packet_create().",[["1<<0","ENET_PACKET_FLAG_RELIABLE","Guaranteed + ordered"],["1<<1","ENET_PACKET_FLAG_UNSEQUENCED","No ordering, no resend"],["1<<2","ENET_PACKET_FLAG_NO_ALLOCATE","Use caller's buffer, don't copy"],["1<<3","ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT","Fragment unreliable packets"],["1<<8","ENET_PACKET_FLAG_SENT","Set after packet was sent"]]],
+["ENetSocketType / Option / Wait / Shutdown","enum","enet.h","Socket helper enums.",[["STREAM=1, DATAGRAM=2","ENetSocketType",""],["NONBLOCK, BROADCAST, RCVBUF, SNDBUF, REUSEADDR, RCVTIMEO, SNDTIMEO, ERROR, NODELAY","ENetSocketOption",""],["NONE=0, SEND=1, RECEIVE=2, INTERRUPT=4","ENetSocketWait",""],["READ=0, WRITE=1, READ_WRITE=2","ENetSocketShutdown",""]]],
+["ENetProtocol (wire structs)","union","protocol.h","Network protocol commands (packed).",[["ENetProtocolHeader","header","peerID, sentTime (+checksum)"],["ENetProtocolCommandHeader","header","command, channelID, reliableSequenceNumber"],["ENetProtocolAcknowledge","acknowledge","receivedReliableSequenceNumber, receivedSentTime"],["ENetProtocolConnect","connect","outgoingPeerID, mtu, windowSize, channelCount, bandwidth, throttle params, connectID, data"],["ENetProtocolVerifyConnect","verifyConnect","Reply to connect"],["ENetProtocolBandwidthLimit","bandwidthLimit","Incoming/outgoing bandwidth"],["ENetProtocolThrottleConfigure","throttleConfigure","interval, acceleration, deceleration"],["ENetProtocolDisconnect","disconnect","data"],["ENetProtocolPing","ping","Header only"],["ENetProtocolSendReliable","sendReliable","dataLength"],["ENetProtocolSendUnreliable","sendUnreliable","unreliableSequenceNumber, dataLength"],["ENetProtocolSendUnsequenced","sendUnsequenced","unsequencedGroup, dataLength"],["ENetProtocolSendFragment","sendFragment","startSequenceNumber, fragmentCount, fragmentNumber, totalLength, fragmentOffset"]]]
+];
+
+// Functions: [name, returns, params, description, group]
+const FUNCS = [
+["enet_initialize","int","void","Initialize ENet. Call once at startup. Returns 0 on success.","Global"],
+["enet_initialize_with_callbacks","int","ENetVersion version, const ENetCallbacks *inits","Initialize with custom allocator.","Global"],
+["enet_deinitialize","void","void","Shut ENet down. Call once at exit.","Global"],
+["enet_linked_version","ENetVersion","void","Version of the linked library.","Global"],
+["enet_time_get","enet_uint32","void","Milliseconds since ENet start (or enet_time_set).","Time"],
+["enet_time_set","void","enet_uint32","Set the ENet time base.","Time"],
+["enet_address_set_host","int","ENetAddress *, const char *hostName","Resolve hostname (DNS) into address. 0 = ok.","Address"],
+["enet_address_set_host_ip","int","ENetAddress *, const char *ip","Parse a numeric IP string.","Address"],
+["enet_address_get_host","int","const ENetAddress *, char *name, size_t len","Reverse DNS.","Address"],
+["enet_address_get_host_ip","int","const ENetAddress *, char *ip, size_t len","Address to numeric string.","Address"],
+["enet_packet_create","ENetPacket *","const void *data, size_t len, enet_uint32 flags","Create a packet (copies data unless NO_ALLOCATE).","Packet"],
+["enet_packet_create_offset","ENetPacket *","const void *, size_t, size_t dataOffset, enet_uint32 flags","Create packet with extra reserved bytes.","Packet"],
+["enet_packet_destroy","void","ENetPacket *","Free a packet. Required after receiving one.","Packet"],
+["enet_packet_resize","int","ENetPacket *, size_t newLen","Resize payload.","Packet"],
+["enet_crc32","enet_uint32","const ENetBuffer *, size_t bufferCount","CRC32 checksum, assign to host->checksum.","Packet"],
+["enet_host_create","ENetHost *","const ENetAddress *, size_t peerCount, size_t channelLimit, enet_uint32 in, enet_uint32 out","Create server (address) or client (NULL). Returns NULL on failure.","Host"],
+["enet_host_destroy","void","ENetHost *","Free host and all peers.","Host"],
+["enet_host_connect","ENetPeer *","ENetHost *, const ENetAddress *, size_t channelCount, enet_uint32 data","Start connecting. Wait for CONNECT event.","Host"],
+["enet_host_service","int","ENetHost *, ENetEvent *, enet_uint32 timeout","Main loop call: send, receive, dispatch. >0 event, 0 none, <0 error.","Host"],
+["enet_host_check_events","int","ENetHost *, ENetEvent *","Dispatch pending events without network I/O.","Host"],
+["enet_host_flush","void","ENetHost *","Send queued commands now.","Host"],
+["enet_host_broadcast","void","ENetHost *, enet_uint8 channel, ENetPacket *","Send to all connected peers.","Host"],
+["enet_host_channel_limit","void","ENetHost *, size_t","Change max channels.","Host"],
+["enet_host_bandwidth_limit","void","ENetHost *, enet_uint32 in, enet_uint32 out","Change bandwidth limits.","Host"],
+["enet_host_compress","void","ENetHost *, const ENetCompressor *","Set compressor.","Host"],
+["enet_host_compress_with_range_coder","int","ENetHost *","Enable built-in range coder compression.","Host"],
+["enet_peer_send","int","ENetPeer *, enet_uint8 channel, ENetPacket *","Queue packet. ENet takes ownership.","Peer"],
+["enet_peer_receive","ENetPacket *","ENetPeer *, enet_uint8 *channelID","Pull next packet (rarely used manually).","Peer"],
+["enet_peer_ping","void","ENetPeer *","Send ping.","Peer"],
+["enet_peer_ping_interval","void","ENetPeer *, enet_uint32","Set ping interval.","Peer"],
+["enet_peer_timeout","void","ENetPeer *, limit, minimum, maximum","Set timeout params.","Peer"],
+["enet_peer_disconnect","void","ENetPeer *, enet_uint32 data","Request graceful disconnect.","Peer"],
+["enet_peer_disconnect_later","void","ENetPeer *, enet_uint32 data","Disconnect after outgoing queue drains.","Peer"],
+["enet_peer_disconnect_now","void","ENetPeer *, enet_uint32 data","Disconnect immediately, no DISCONNECT event.","Peer"],
+["enet_peer_reset","void","ENetPeer *","Force-reset connection, no notice to remote.","Peer"],
+["enet_peer_throttle_configure","void","ENetPeer *, interval, acceleration, deceleration","Tune packet throttle.","Peer"],
+["enet_socket_create","ENetSocket","ENetSocketType","Create socket.","Socket"],
+["enet_socket_bind / _listen / _accept / _connect","int","ENetSocket, ENetAddress *","Low level socket ops.","Socket"],
+["enet_socket_send / _receive","int","ENetSocket, ENetAddress *, ENetBuffer *, size_t","Send/recv datagrams.","Socket"],
+["enet_socket_wait","int","ENetSocket, enet_uint32 *condition, enet_uint32 timeout","Wait for readiness.","Socket"],
+["enet_socket_set_option / _get_option","int","ENetSocket, ENetSocketOption, int","Socket options.","Socket"],
+["enet_socket_get_address","int","ENetSocket, ENetAddress *","Bound address.","Socket"],
+["enet_socket_shutdown / _destroy","int / void","ENetSocket, ...","Close socket.","Socket"],
+["enet_socketset_select","int","ENetSocket, ENetSocketSet *, ENetSocketSet *, enet_uint32","select() wrapper.","Socket"],
+["enet_range_coder_create / _destroy","void *","void / void *","Range coder compressor internals.","Compress"],
+["enet_list_insert / _remove / _move / _size / _begin / _end","various","list.h","Intrusive list helpers.","List"],
+["enet_malloc / enet_free","void *","size_t","Allocation wrappers (callbacks.c).","Memory"]
+];
+
+const FILES = [
+["include/enet/enet.h","Public API: all structs, enums, function prototypes."],
+["include/enet/callbacks.h","ENetCallbacks type, enet_malloc, enet_free."],
+["include/enet/list.h","Intrusive linked list."],
+["include/enet/protocol.h","Wire protocol commands and constants."],
+["include/enet/time.h","ENET_TIME_OVERFLOW, comparison macros."],
+["include/enet/types.h","enet_uint8, enet_uint16, enet_uint32."],
+["include/enet/unix.h","POSIX socket mappings."],
+["include/enet/win32.h","Winsock mappings."],
+["include/enet/utility.h","ENET_MAX, ENET_MIN, ENET_DIFFERENCE."],
+["include/enet/enet.h (Windows/Unix)","Includes platform header automatically."],
+["callbacks.c","Allocator hooks, enet_initialize_with_callbacks."],
+["compress.c","Range coder compression."],
+["host.c","Host create/destroy/connect/broadcast/bandwidth."],
+["list.c","List implementation."],
+["packet.c","Packet create/destroy, CRC32."],
+["peer.c","Peer logic, queues, throttle, disconnect."],
+["protocol.c","Protocol engine: send, receive, dispatch, service."],
+["unix.c","POSIX sockets, time, DNS."],
+["win32.c","Windows sockets, time, DNS."],
+["CMakeLists.txt","CMake build."],
+["configure.ac / Makefile.am","Autotools build."],
+["enet.dsp","Visual Studio project (old)."],
+["docs/","Tutorial, features, install."],
+["include/","Header folder."],
+["Doxyfile","Doc generation."]
+];
+
+const GLOBALS = [
+["ENET_VERSION_MAJOR / MINOR / PATCH","1 / 3 / 17 (typical)","Library version macros"],
+["ENET_VERSION","packed","ENET_VERSION_CREATE(major,minor,patch)"],
+["ENET_HOST_ANY","0","Bind to any interface"],
+["ENET_HOST_BROADCAST","0xFFFFFFFF","Broadcast address"],
+["ENET_PORT_ANY","0","Let OS choose port"],
+["ENET_PROTOCOL_MINIMUM_MTU","576","Min MTU"],
+["ENET_PROTOCOL_MAXIMUM_MTU","4096","Max MTU"],
+["ENET_PROTOCOL_MAXIMUM_PACKET_COMMANDS","32","Commands per datagram"],
+["ENET_PROTOCOL_MINIMUM_WINDOW_SIZE","4096","Min window"],
+["ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE","65536","Max window"],
+["ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT","1","Min channels"],
+["ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT","255","Max channels"],
+["ENET_PROTOCOL_MAXIMUM_PEER_ID","0xFFF","Max peers (4095)"],
+["ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT","1048576","Max fragments per packet"],
+["ENET_HOST_RECEIVE_BUFFER_SIZE","262144","Socket receive buffer"],
+["ENET_HOST_SEND_BUFFER_SIZE","262144","Socket send buffer"],
+["ENET_HOST_BANDWIDTH_THROTTLE_INTERVAL","1000","ms between throttle recalculation"],
+["ENET_HOST_DEFAULT_MTU","1400","Default MTU"],
+["ENET_HOST_DEFAULT_MAXIMUM_PACKET_SIZE","33554432","32 MB"],
+["ENET_HOST_DEFAULT_MAXIMUM_WAITING_DATA","33554432","32 MB"],
+["ENET_PEER_DEFAULT_ROUND_TRIP_TIME","500","Initial RTT ms"],
+["ENET_PEER_DEFAULT_PACKET_THROTTLE","32","Initial throttle"],
+["ENET_PEER_PACKET_THROTTLE_SCALE","32","Throttle scale"],
+["ENET_PEER_PACKET_THROTTLE_COUNTER","7","Throttle counter"],
+["ENET_PEER_PACKET_THROTTLE_ACCELERATION","2","Throttle accel"],
+["ENET_PEER_PACKET_THROTTLE_DECELERATION","2","Throttle decel"],
+["ENET_PEER_PACKET_THROTTLE_INTERVAL","5000","ms"],
+["ENET_PEER_PACKET_LOSS_SCALE","65536","1<<16"],
+["ENET_PEER_PACKET_LOSS_INTERVAL","10000","ms"],
+["ENET_PEER_WINDOW_SIZE_SCALE","65536","Window scale"],
+["ENET_PEER_TIMEOUT_LIMIT","32","Retransmits before timeout"],
+["ENET_PEER_TIMEOUT_MINIMUM","5000","ms"],
+["ENET_PEER_TIMEOUT_MAXIMUM","30000","ms"],
+["ENET_PEER_PING_INTERVAL","500","ms"],
+["ENET_PEER_UNSEQUENCED_WINDOWS","64","Unsequenced windows"],
+["ENET_PEER_UNSEQUENCED_WINDOW_SIZE","1024","Window size"],
+["ENET_PEER_FREE_UNSEQUENCED_WINDOWS","32","Free windows"],
+["ENET_PEER_RELIABLE_WINDOWS","16","Reliable windows"],
+["ENET_PEER_RELIABLE_WINDOW_SIZE","0x1000","4096"],
+["ENET_PEER_FREE_RELIABLE_WINDOWS","8","Free windows"],
+["callbacks (static)","ENetCallbacks","callbacks.c: default {malloc, free, abort}. Not exported."],
+["timeBase (static)","enet_uint32","unix.c/win32.c: time offset. Not exported."]
+];
+
+const EXAMPLE = `#include <enet/enet.h>
+#include <stdio.h>
+
+int main() {
+    // 1) Init ENet (once)
+    if (enet_initialize() != 0) return 1;
+
+    // 2) Create a server host on port 1234, up to 32 clients, 2 channels
+    ENetAddress addr;
+    addr.host = ENET_HOST_ANY;      // listen on all interfaces
+    addr.port = 1234;
+    ENetHost *server = enet_host_create(&addr, 32, 2, 0, 0);
+
+    // 3) Service loop: ask ENet what happened (wait up to 1000 ms)
+    ENetEvent ev;
+    while (enet_host_service(server, &ev, 1000) >= 0) {
+        switch (ev.type) {
+        case ENET_EVENT_TYPE_CONNECT:
+            printf("client connected\\n");
+            break;
+        case ENET_EVENT_TYPE_RECEIVE:
+            printf("got %zu bytes\\n", ev.packet->dataLength);
+            enet_packet_destroy(ev.packet);   // you own received packets
+            break;
+        case ENET_EVENT_TYPE_DISCONNECT:
+            printf("client left\\n");
+            break;
+        default: break;
+        }
+    }
+    enet_host_destroy(server);
+    enet_deinitialize();
+}`;
+
+// ---------- UI ----------
+// ---------- GROWTOPIA (GTPS) DATA ----------
+// Source: https://voidkle.github.io/gtps-guide (gurotopia, GrowServer, official 5.60 client analysis)
+STRUCTS.push(["ENetHost (Growtopia fork additions)","struct","enet.h (patched ENet)","Growtopia uses a patched ENet (ZTzTopia's fork). These must be set on both sides or packets are silently dropped. Not in vanilla ENet.",[["int","usingNewPacket","CLIENT: set to 1 (newer packet header)"],["int","usingNewPacketForServer","SERVER: set to true (newer packet header)"],["ENetChecksumCallback","checksum","Set to enet_crc32 on both sides"],["call","enet_host_compress_with_range_coder(host)","Range coder compression, both sides"]]]);
+STRUCTS.push(["ENetAddress (fork)","struct","enet.h (patched ENet)","The fork's address carries a type field.",[["ENetAddressType","type","ENET_ADDRESS_TYPE_IPV4"],["enet_uint16","port","17091 by default for Growtopia"]]]);
+FUNCS.push(["enet_host_create (fork)","ENetHost *","ENetAddressType, const ENetAddress *, size_t peers, size_t channels, in, out","Fork takes the address type first. Server example: 50 peers, 2 channels. Client: NULL address, 1 peer, 2 channels.","Host"]);
+
+const MSG=["","SERVER_HELLO","GENERIC_TEXT","GAME_MESSAGE","GAME_PACKET","ERROR","TRACK","CLIENT_LOG_REQUEST","CLIENT_LOG_RESPONSE","NETSTATE_SNAPSHOT","NETSTATE_FRAME","NETSTATE_RAW"];
+const MSGD=["","Server's first message after ENet connects","Text key|value lines (login: protocol|, ltoken|)","Text key|value lines (every action|... lives here)","56-byte binary header + optional extra data","see guide","see guide","see guide","see guide","see guide","see guide","see guide"];
+const PKT="STATE,CALL_FUNCTION,UPDATE_STATUS,TILE_CHANGE_REQUEST,SEND_MAP_DATA,SEND_TILE_UPDATE_DATA,SEND_TILE_UPDATE_DATA_MULTIPLE,TILE_ACTIVATE_REQUEST,TILE_APPLY_DAMAGE,SEND_INVENTORY_STATE,ITEM_ACTIVATE_REQUEST,ITEM_ACTIVATE_OBJECT_REQUEST,SEND_TILE_TREE_STATE,MODIFY_ITEM_INVENTORY,ITEM_CHANGE_OBJECT,SEND_LOCK,SEND_ITEM_DATABASE_DATA,SEND_PARTICLE_EFFECT,SET_ICON_STATE,ITEM_EFFECT,SET_CHARACTER_STATE,PING_REPLY,PING_REQUEST,GOT_PUNCHED,APP_CHECK_RESPONSE,APP_INTEGRITY_FAIL,DISCONNECT,BATTLE_JOIN,BATTLE_EVENT,USE_DOOR,SEND_PARENTAL,GONE_FISHIN,STEAM,PET_BATTLE,NPC,SPECIAL,SEND_PARTICLE_EFFECT_V2,ACTIVE_ARROW_TO_ITEM,SELECT_TILE_INDEX,SEND_PLAYER_TRIBUTE_DATA,FTUE_SET_ITEM_TO_QUICK_INVENTORY,PVE_NPC,PVPCARD_BATTLE,PVE_APPLY_PLAYER_DAMAGE,PVE_NPC_POSITION_UPDATE,SET_EXTRA_MODS,ON_STEP_ON_TILE_MOD".split(",");
+const HDR=[["type",0,"u8"],["objectType",1,"u8"],["jumpCount",2,"u8"],["buildRange",3,"u8"],["netID",4,"i32"],["targetNetID",8,"i32"],["flags",12,"i32"],["float_var",16,"f32"],["itemID",20,"i32"],["posX",24,"f32"],["posY",28,"f32"],["speedX",32,"f32"],["speedY",36,"f32"],["particleID",40,"f32"],["tileX",44,"i32"],["tileY",48,"i32"],["extraDataLength",52,"u32"]];
+const HDRD=["game packet type (list below)","","e.g. amount removed (MODIFY_ITEM_INVENTORY)","e.g. amount added, damage value","player in the world, or -1","second id (object uid ...)","state bits (below)","object count ...","item in hand (18 Fist, 32 Wrench) or item placed","pixels (1 tile = 32)","pixels","","","","tile column","tile row","bytes of extra data after header"];
+const FLG=[[4,"S_UPDATE"],[8,"S_EXTENDED (extra data follows)"],[16,"S_MOVE_LEFT (facing left)"],[32,"S_MOVE_RIGHT"],[64,"S_LAVA_HIT"],[128,"S_JUMP"],[0x4000,"S_ACTIVATE_OBJECT"]];
+const ACT={"World":"join_request,quit_to_exit,validate_world,world_button,gohomeworld,respawn,respawn_spike,on_use_door_tutorial,update_weather_machine","Session":"enter_game,refresh_item_data,refresh_player_tribute_data,quit,growid,requestAccountDelete,AccountSecurity,setGDPR","Chat & players":"input,wrench,pveprofile,friends,communitytabs,setchatFilter,setFilter,setOnlyFriendsChat","Inventory & items":"drop,trash,info,itemfavourite,setSkin,setRoleSkin,setRoleIcon,setDeath,setRespawn,wardrobe_save_ui,wardrobe_load_ui,wardrobe_preset_load,wardrobe_unequip_all,worldlock_storage_getpage","Trading":"trade_started,mod_trade,rem_trade,trade_lock,trade_accept,trade_check_price,trade_cancel","Dialogs & store":"dialog_return,store,storenavigate,buy,killstore,chaching","Events & extras":"dailyrewardmenu,claimdailyreward,eventmenu,mailbox_getpage,mailbox_readmessage,mailbox_claimreward,auction_getpage,auction_place_bid,startdungeonbtn,fashion_show_vote"};
+const SFN="OnSendToServer,OnConsoleMessage,OnSpawn,OnRemove,OnSetPos,OnSetClothing,OnTalkBubble,OnDialogRequest,OnRequestWorldSelectMenu,OnFailedToEnterWorld,OnReconnect,OnRedirectServer,OnSetBux,OnNameChanged,OnTextOverlay,OnAddNotification,OnStartTrade,OnTradeStatus,OnParticleEffect,OnInvis,OnKilled,OnZoomCamera,OnSetCurrentWeather,OnSetFreezeState,OnInitNewWorld,OnLocalPlayerSpawned,OnLogout,OnWrongDetails".split(",");
+
+function renderGtps(o){
+ const base="https://voidkle.github.io/gtps-guide";
+ const A=(u,t)=>`<a class="chip" href="${base}/${u}" target="_blank" rel="noopener">${esc(t)}</a>`;
+ const tb=r=>`<div class="card sc"><table>${r.map(x=>`<tr>${x.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table></div>`;
+ const n=x=>`<span class="n">${x}</span>`;
+ let h=`<p class="mute">Source: <a href="${base}/guide/introduction" target="_blank" rel="noopener" style="color:var(--acc)">GTPS Protocol guide</a> (gurotopia, GrowServer and the official 5.60 client analysis). All integers and floats are little-endian. Chips link to the guide.</p>`;
+ h+=`<div class="sec">Connection flow</div><div class="flow">${["HTTPS POST server_data.php","ENet connect (UDP 17091)","1 SERVER_HELLO","2 GENERIC_TEXT login","4 GAME_PACKET OnSendToServer","3 GAME_MESSAGE enter_game"].map(n).join('<span class="a">→</span>')}</div>`;
+ h+=`<div class="sec">Growtopia's 3 ENet changes (all required)</div>`+tb([["Change","Client","Server"],["New packet header","host->usingNewPacket = 1","host->usingNewPacketForServer = 1"],["CRC32 checksum","host->checksum = enet_crc32","same"],["Range coder","enet_host_compress_with_range_coder(host)","same"],["Port / channels","17091 / 2","17091 / 2 (everything on channel 0, RELIABLE)"]]);
+ h+=`<div class="sec">Message types (first 4 bytes of every ENet packet)</div>`+tb(MSG.slice(1).map((m,i)=>[String(i+1),m,MSGD[i+1]]));
+ h+=`<div class="sec">GAME_PACKET header (56 bytes after the 4-byte message type)</div>`+tb([["Offset","Field","Type","Meaning"]].concat(HDR.map((f,i)=>[String(f[1]),f[0],f[2],HDRD[i]])));
+ h+=`<div class="sec">flags</div>`+tb(FLG.map(f=>["0x"+f[0].toString(16),f[1]]));
+ h+=`<div class="sec">Variant list (extra data of CALL_FUNCTION 0x01)</div>`+tb([["Type","Name","Data"],["1","float","4 bytes"],["2","string","u32 length + bytes"],["3","vec2","2 x f32"],["4","vec3","3 x f32"],["5","uint32","4 bytes"],["9","int32","4 bytes"]])+`<p class="mute">Layout: u8 count, then per entry: u8 index (0 = function name), u8 type, data. Header netID = which player, itemID = delay in ms.</p>`;
+ const pk=PKT.map((p,i)=>{const x=i.toString(16).padStart(2,"0");return ["0x"+x+" "+p,"packets/"+x+"-"+p.toLowerCase().replace(/_/g,"-")]}).filter(p=>hit([p[0]]));
+ h+=`<div class="sec">Game packet types (${pk.length})</div><div>${pk.map(p=>A(p[1],p[0])).join("")}</div>`;
+ h+=`<div class="sec">Client actions (text, sent as action|name)</div>`;
+ for(const g in ACT){const l=ACT[g].split(",").filter(a=>hit([a,g]));if(l.length)h+=`<p class="mute" style="margin:8px 0 2px">${esc(g)}</p><div>${l.map(a=>A("actions/"+a,a)).join("")}</div>`}
+ const sf=SFN.filter(a=>hit([a]));
+ h+=`<div class="sec">Server functions (a selection, variant list in CALL_FUNCTION)</div><div>${sf.map(a=>A("functions/"+a,a)).join("")}</div>`;
+ h+=`<div class="sec">Server setup (from the guide)</div><div class="card sc"><pre>${esc(`ENetAddress address{ .type = ENET_ADDRESS_TYPE_IPV4, .port = 17091 };
+host = enet_host_create(ENET_ADDRESS_TYPE_IPV4, &address, 50 /* peers */, 2, 0, 0);
+host->usingNewPacketForServer = true;   // Growtopia change 1
+host->checksum = enet_crc32;            // Growtopia change 2
+enet_host_compress_with_range_coder(host); // Growtopia change 3`)}</pre></div>`;
+ h+=`<div class="sec">Build a 60-byte GAME_PACKET by hand</div><div class="card sc"><pre>${esc(`unsigned char p[60] = {};
+int message = 4;  memcpy(p, &message, 4);   // GAME_PACKET
+p[4] = 0x03;                                // type TILE_CHANGE_REQUEST
+int netid = my_netid; memcpy(p + 8, &netid, 4);
+int item = 18;        memcpy(p + 24, &item, 4);   // Fist
+int tx = 25, ty = 37; memcpy(p + 48, &tx, 4); memcpy(p + 52, &ty, 4);
+enet_peer_send(server, 0, enet_packet_create(p, sizeof p, ENET_PACKET_FLAG_RELIABLE));`)}</pre></div>`;
+ o.innerHTML=h;
+}
+
+// ---------- PACKET TRACKER ----------
+const enc=new TextEncoder();
+const le=(n,s)=>{const a=[];for(let i=0;i<s;i++)a.push((n>>>(8*i))&255);return a};
+const f32=x=>[...new Uint8Array(new Float32Array([x]).buffer)];
+const S=(l,b)=>({l,b});
+const hex2=n=>n.toString(16).padStart(2,"0");
+const txt=(t,s)=>[S("message type = "+t+" "+MSG[t],le(t,4)),S("text: "+s.replace(/\n/g,"\\n"),[...enc.encode(s)])];
+function varlist(a){const g=[S("variant count = "+a.length,[a.length])];a.forEach((v,i)=>{if(v[0]==="s"){const b=[...enc.encode(v[1])];g.push(S(`#${i} string "${v[1]}"`,[i,2,...le(b.length,4),...b]))}else g.push(S(`#${i} int32 ${v[1]}`,[i,9,...le(v[1],4)]))});return g}
+function gp(o,extra){const h=Object.assign({type:0,objectType:0,jumpCount:0,buildRange:0,netID:-1,targetNetID:0,flags:0,float_var:0,itemID:0,posX:0,posY:0,speedX:0,speedY:0,particleID:0,tileX:0,tileY:0},o);const e=extra?extra.flatMap(s=>s.b):[];if(extra)h.flags|=8;
+ const g=[S("message type = 4 GAME_PACKET",le(4,4)),S(`type = 0x${hex2(h.type)} ${PKT[h.type]}`,[h.type,h.objectType,h.jumpCount,h.buildRange]),S("netID = "+h.netID,le(h.netID,4)),S("targetNetID = "+h.targetNetID,le(h.targetNetID,4)),S("flags = 0x"+h.flags.toString(16),le(h.flags,4)),S("float_var",f32(h.float_var)),S("itemID = "+h.itemID,le(h.itemID,4)),S(`pos = (${h.posX}, ${h.posY}) px`,[...f32(h.posX),...f32(h.posY)]),S("speed",[...f32(h.speedX),...f32(h.speedY)]),S("particleID",f32(h.particleID)),S(`tile = (${h.tileX}, ${h.tileY})`,[...le(h.tileX,4),...le(h.tileY,4)]),S("extraDataLength = "+e.length,le(e.length,4))];
+ return extra?g.concat(extra):g}
+const STN=["DISCONNECTED","CONNECTING","ACKNOWLEDGING_CONNECT","CONNECTED","DISCONNECTING"];
+// ly = layer, d: ">" client to server, "<" server to client. Values marked (example) are illustrative.
+const STEPS=[
+{ly:"HTTPS",d:">",t:"Client asks where the server is",api:"POST /growtopia/server_data.php",n:"Before any ENet, the client asks an HTTPS endpoint for the server address. The reply carries the server address, the ENet port and a login URL.",raw:"server|127.0.0.1\nport|17091\nloginurl|<your login url>   (example)",cs:0,ss:0},
+{ly:"ENet",d:">",t:"enet_host_connect()",api:"enet_host_connect(host, &address, 2, 0);",n:"Client creates an ENetPeer (CONNECTING) and sends a UDP CONNECT command to port 17091. Both hosts must already have the 3 Growtopia changes, or every packet is silently dropped.",raw:"UDP datagram: ENet header (peerID, sentTime, CRC32 checksum)\n+ CONNECT command (mtu, windowSize, channelCount = 2, bandwidth, throttle settings, connectID)",cs:1,ss:2},
+{ly:"ENet",d:"<",t:"VERIFY_CONNECT, CONNECT events",api:"ENetEvent.type == ENET_EVENT_TYPE_CONNECT",n:"Server answers VERIFY_CONNECT. Both sides get a CONNECT event and the peers become CONNECTED. From here on, every message is sent on channel 0 with the RELIABLE flag.",raw:"ENetEvent { type: CONNECT, peer: <peer>, channelID: 0, data: 0 }",cs:3,ss:3},
+{ly:"MSG",d:"<",t:"1 SERVER_HELLO",api:"enet_peer_send(peer, 0, packet(RELIABLE))",n:"The server speaks first: a bare 4-byte message type.",s:[S("message type = 1 SERVER_HELLO",le(1,4))],cs:3,ss:3},
+{ly:"MSG",d:">",t:"2 GENERIC_TEXT (login)",api:"text key|value lines",n:"Client sends login fields as key|value lines. The guide shows protocol| and ltoken| (values here are examples).",s:txt(2,"protocol|0\nltoken|example"),cs:3,ss:3},
+{ly:"GAME",d:"<",t:"4 GAME_PACKET: OnSendToServer",api:"CALL_FUNCTION (0x01) + variant list",n:"Server calls a function on the client using a variant list in the extra data. flags has S_EXTENDED (0x08). The arguments here are only an example, see the OnSendToServer page for the real ones.",s:gp({type:1},varlist([["s","OnSendToServer"],["i",17091]])),cs:3,ss:3},
+{ly:"MSG",d:">",t:"3 GAME_MESSAGE: enter_game",api:"action|enter_game",n:"Client says it is ready. Every action| is a GAME_MESSAGE text.",s:txt(3,"action|enter_game\n"),cs:3,ss:3},
+{ly:"GAME",d:"<",t:"OnConsoleMessage",api:"CALL_FUNCTION (0x01)",n:"Server shows a line in the console. The world select menu is sent the same way (OnRequestWorldSelectMenu).",s:gp({type:1},varlist([["s","OnConsoleMessage"],["s","Welcome!"]])),cs:3,ss:3},
+{ly:"MSG",d:">",t:"action|join_request",api:"GAME_MESSAGE text",n:"Client asks to join a world (the name| field is an example).",s:txt(3,"action|join_request\nname|START"),cs:3,ss:3},
+{ly:"GAME",d:"<",t:"0x04 SEND_MAP_DATA",api:"GAME_PACKET type 0x04",n:"Server sends the world. The extra data is a big world blob, see World data and Tile extras in the guide (shortened here).",s:gp({type:4},[S("extra: world blob (shortened, illustrative)",[1,0,0,0])]),cs:3,ss:3},
+{ly:"GAME",d:">",t:"0x00 STATE (movement)",api:"GAME_PACKET type 0x00",n:"Client reports its position. pos is in pixels (1 tile = 32). flags say facing right + jump (0x20 | 0x80).",s:gp({type:0,netID:7,flags:0xa0,itemID:18,posX:672,posY:1152}),cs:3,ss:3},
+{ly:"GAME",d:">",t:"0x03 TILE_CHANGE_REQUEST",api:"GAME_PACKET type 0x03",n:"Punch or place. itemID 18 is the Fist, tileX/tileY is the target tile. Same example as the guide's hand-built packet.",s:gp({type:3,netID:7,itemID:18,posX:21*32,posY:36*32,tileX:25,tileY:37}),cs:3,ss:3},
+{ly:"GAME",d:"<",t:"0x08 TILE_APPLY_DAMAGE",api:"GAME_PACKET type 0x08",n:"Server tells clients the tile took damage. buildRange (byte 3 of the header) holds the damage value.",s:gp({type:8,buildRange:6,netID:7,tileX:25,tileY:37}),cs:3,ss:3},
+{ly:"MSG",d:">",t:"action|input (chat)",api:"GAME_MESSAGE text",n:"Chat is just an action text (field format is an example).",s:txt(3,"action|input\n|text|hello"),cs:3,ss:3},
+{ly:"GAME",d:"<",t:"OnTalkBubble",api:"CALL_FUNCTION (0x01)",n:"Server replies with a talk bubble for player netID 7. netID in the header says which player the call is about.",s:gp({type:1,netID:7},varlist([["s","OnTalkBubble"],["i",7],["s","hello"]])),cs:3,ss:3},
+{ly:"MSG",d:">",t:"action|quit",api:"GAME_MESSAGE text",n:"Client asks to leave the session.",s:txt(3,"action|quit\n"),cs:3,ss:3},
+{ly:"ENet",d:">",t:"enet_peer_disconnect()",api:"enet_peer_disconnect(peer, 0);",n:"Graceful disconnect: peer goes DISCONNECTING and a DISCONNECT command is sent.",raw:"ENet DISCONNECT command (data = 0)",cs:4,ss:4},
+{ly:"ENet",d:"<",t:"DISCONNECT event",api:"ENetEvent.type == ENET_EVENT_TYPE_DISCONNECT",n:"Both sides get a DISCONNECT event. Peers go back to DISCONNECTED.",raw:"ENetEvent { type: DISCONNECT, peer: <peer>, data: 0 }",cs:0,ss:0}
+];
+STEPS.forEach(s=>{if(s.s)s.bytes=s.s.flatMap(x=>x.b)});
+
+function vars(b,o0){const dv=new DataView(b.buffer),out=[],NM=["","float","string","vec2","vec3","uint32","","","","int32"];let o=o0,c=b[o++];
+ for(let k=0;k<c&&o+2<=b.length;k++){const i=b[o],t=b[o+1];o+=2;let v;
+  if(t===2){const l=dv.getUint32(o,true);v='"'+new TextDecoder().decode(b.slice(o+4,o+4+l))+'"';o+=4+l}
+  else if(t===1){v=dv.getFloat32(o,true);o+=4}else if(t===5){v=dv.getUint32(o,true);o+=4}else if(t===9){v=dv.getInt32(o,true);o+=4}
+  else if(t===3){v=`(${dv.getFloat32(o,true)}, ${dv.getFloat32(o+4,true)})`;o+=8}else if(t===4){v="vec3";o+=12}else break;
+  out.push(["#"+i,NM[t],v])}
+ return out}
+function decode(h){
+ const b=new Uint8Array((h.match(/[0-9a-f]{2}/gi)||[]).map(x=>parseInt(x,16)));
+ if(b.length<4)return '<p class="mute">Need at least 4 bytes (the message type).</p>';
+ try{const dv=new DataView(b.buffer),t=dv.getUint32(0,true);
+  let r=`<p><b>message type</b> ${t} ${MSG[t]||"unknown"}</p>`;
+  if(t===2||t===3){r+=`<div class="sc"><table>${new TextDecoder().decode(b.slice(4)).split("\n").filter(Boolean).map(l=>{const p=l.split("|");return `<tr><td>${esc(p[0])}</td><td>${esc(p.slice(1).join("|"))}</td></tr>`}).join("")}</table></div>`}
+  else if(t===4){if(b.length<60)return r+"GAME_PACKET needs 60 bytes.";
+   let fl=0,rows=HDR.map(f=>{const o=4+f[1],v=f[2]==="u8"?b[o]:f[2]==="i32"?dv.getInt32(o,true):f[2]==="f32"?dv.getFloat32(o,true):dv.getUint32(o,true);if(f[0]==="flags")fl=v;return [f[0],String(v)+(f[0]==="type"?"  "+(PKT[v]||"?"):"")+(f[0]==="flags"?"  "+FLG.filter(x=>v&x[0]).map(x=>x[1].split(" ")[0]).join(" "):"")]});
+   r+=`<div class="sc"><table>${rows.map(x=>`<tr><td>${x[0]}</td><td style="white-space:normal">${esc(x[1])}</td></tr>`).join("")}</table></div>`;
+   if(b[4]===1&&(fl&8)&&b.length>60){r+='<p><b>variant list</b></p><div class="sc"><table>'+vars(b,60).map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td style="white-space:normal">${esc(x[2])}</td></tr>`).join("")+"</table></div>"}}
+  return r}catch(e){return '<p class="mute">Could not decode: data is cut off or malformed.</p>'}}
+
+function moveDot(d){const el=$("#dot");if(!el)return;const a="calc(21% - 8px)",c="calc(79% - 8px)";el.style.transition="none";el.style.left=d===">"?a:c;void el.offsetWidth;el.style.transition="left .7s ease";el.style.left=d===">"?c:a}
+function renderTrack(o){
+ let ti=0;
+ o.innerHTML=`<p class="mute">Step through a full session and see the ENet peer states, the packet on the wire, and every byte decoded. Payloads marked (example) are illustrative, not captured traffic.</p><div class="ctl"><button class="btn" id="pv">◀ Prev</button><button class="btn pri" id="pl">▶ Play</button><button class="btn" id="nx">Next ▶</button><span class="mute" id="cnt"></span></div><div class="lane"><div class="node"><b>🖥 Client</b><div id="cs"></div></div><div class="line"></div><div class="dot" id="dot"></div><div class="node"><b>🛰 Server</b><div id="ss"></div></div></div><div class="row"><div><div class="sec" style="margin-top:0">Packet tracker</div><div class="log" id="lg"></div></div><div class="card" id="ins"></div></div><div class="sec">Decoder: paste hex from any capture</div><div class="card"><textarea id="hx" spellcheck="false"></textarea><button class="btn pri" id="dc" style="margin-top:8px">Decode</button><div id="do" style="margin-top:8px"></div></div><div class="sec">Capture log: paste many packets</div><div class="card"><p class="desc">One packet per line as hex, optional prefix C&gt;S or S&gt;C for direction. Lines starting with # are ignored. Log them from your own server (see the C++ Codec tab), then analyze the whole session here.</p><textarea id="cl" spellcheck="false" placeholder="C>S 02 00 00 00 70 72 6f 74 6f 63 6f 6c ..."></textarea><div class="ctl" style="margin-top:8px"><button class="btn pri" id="an">Analyze log</button><button class="btn" id="sm">Fill with sample log</button><input type="file" id="fi" accept=".txt,.log"></div><div id="ao" style="margin-top:8px"></div></div>`;
+ const chips=v=>STN.map((s,i)=>`<span class="st ${i===v?"on":""}">${s}</span>`).join("");
+ function show(i){ti=Math.max(0,Math.min(STEPS.length-1,i));const s=STEPS[ti];
+  $("#cnt").textContent=`Step ${ti+1} / ${STEPS.length}`;$("#cs").innerHTML=chips(s.cs);$("#ss").innerHTML=chips(s.ss);moveDot(s.d);
+  $("#lg").innerHTML=STEPS.map((x,k)=>`<div class="li ${k===ti?"on":""} ${k>ti?"fut":""}" data-k="${k}"><span class="badge">${x.ly}</span>${x.d===">"?"C → S":"S → C"} ${esc(x.t)}${x.bytes?` <span class="mute">${x.bytes.length} B</span>`:""}</div>`).join("");
+  document.querySelectorAll(".li").forEach(e=>e.onclick=()=>{stop();show(+e.dataset.k)});
+  let off=0,body="";
+  if(s.s){body=`<div class="sc"><table>${s.s.map(g=>{const r=`<tr><td>${off}</td><td class="hx" style="white-space:normal">${g.b.map(hex2).join(" ")}</td><td style="white-space:normal">${esc(g.l)}</td></tr>`;off+=g.b.length;return r}).join("")}</table></div><p class="mute">${off} bytes total</p>`}
+  else body=`<pre>${esc(s.raw)}</pre>`;
+  $("#ins").innerHTML=`<span class="badge">${s.ly}</span><span class="badge">${s.d===">"?"client → server":"server → client"}</span><h3 style="font-family:inherit;color:var(--text);font-size:17px;margin-top:8px">${esc(s.t)}</h3><pre>${esc(s.api)}</pre><p class="desc">${esc(s.n)}</p>${body}`;
+  if(s.bytes){$("#hx").value=s.bytes.map(hex2).join(" ");$("#do").innerHTML=decode($("#hx").value)}}
+ function stop(){clearInterval(window._tm);window._tm=null;$("#pl").textContent="▶ Play"}
+ $("#pv").onclick=()=>{stop();show(ti-1)};$("#nx").onclick=()=>{stop();show(ti+1)};
+ $("#pl").onclick=()=>{if(window._tm){stop();return}$("#pl").textContent="⏸ Pause";if(ti>=STEPS.length-1)show(0);window._tm=setInterval(()=>{if(ti>=STEPS.length-1){stop();return}show(ti+1)},1800)};
+ $("#dc").onclick=()=>{$("#do").innerHTML=decode($("#hx").value)};
+ $("#sm").onclick=()=>{$("#cl").value=STEPS.filter(s=>s.bytes).map(s=>(s.d===">"?"C>S ":"S>C ")+s.bytes.map(hex2).join(" ")).join("\n")};
+ $("#fi").onchange=e=>{const f=e.target.files[0];if(f)f.text().then(t=>{$("#cl").value=t})};
+ $("#an").onclick=()=>{const rows=[];
+  $("#cl").value.split("\n").forEach(l=>{l=l.trim();if(!l||l[0]==="#")return;const m=l.match(/^(C>S|S>C|>|<)?\s*((?:[0-9a-f]{2}\s*)+)$/i);if(!m)return;rows.push([m[1]||"?",new Uint8Array(m[2].match(/[0-9a-f]{2}/gi).map(x=>parseInt(x,16)))])});
+  $("#ao").innerHTML=rows.length?`<div class="sc"><table>${rows.map((r,i)=>`<tr class="cr" data-i="${i}" style="cursor:pointer"><td>${i+1}</td><td>${esc(r[0])}</td><td>${r[1].length} B</td><td style="white-space:normal">${esc(summ(r[1]))}</td></tr>`).join("")}</table></div><p class="mute">Click a row to decode it in the decoder above.</p>`:'<p class="mute">No hex lines found.</p>';
+  document.querySelectorAll(".cr").forEach(e=>e.onclick=()=>{const b=rows[+e.dataset.i][1];$("#hx").value=[...b].map(hex2).join(" ");$("#do").innerHTML=decode($("#hx").value);$("#hx").scrollIntoView({behavior:"smooth",block:"center"})})};
+ show(0);
+}
+
+const tabs=[["struct","Data Structures",STRUCTS],["func","Functions",FUNCS],["file","Files",FILES],["glob","Globals",GLOBALS],["flow","Lifecycle",[]],["gtps","GTPS Protocol",[]],["track","Packet Tracker",[]],["cpp","C++ Codec",[]]];
+
+function summ(b){try{if(b.length<4)return "too short";const dv=new DataView(b.buffer),t=dv.getUint32(0,true);let s=MSG[t]||"type "+t;
+ if(t===2||t===3)s+=": "+new TextDecoder().decode(b.slice(4)).split("\n")[0];
+ else if(t===4&&b.length>=60){const ty=b[4];s+=": "+(PKT[ty]||"0x"+hex2(ty));if(ty===1&&b.length>60){const v=vars(b,60);if(v[0])s+=" "+v[0][2]}}
+ return s}catch(e){return "malformed"}}
+
+const WORKED="04 00 00 00 03 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12 00 00 00 00 00 28 44 00 00 90 44 00 00 00 00 00 00 00 00 00 00 00 00 19 00 00 00 25 00 00 00 00 00 00 00";
+const CPP=[
+["1. Hex text to bytes, and bytes back to a hex dump","Raw hex from a log is just text. Turn it into bytes first. Use the same to_hex() to print every packet your own server receives or sends.",`#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <sstream>
+#include <string>
+#include <vector>
+
+// "04 00 00 00 03 ..."  ->  bytes   (tokens must be separated by spaces)
+std::vector<uint8_t> from_hex(const std::string& s) {
+    std::vector<uint8_t> out;
+    std::istringstream in(s);
+    std::string tok;
+    while (in >> tok) out.push_back((uint8_t)std::stoul(tok, nullptr, 16));
+    return out;
+}
+
+// bytes  ->  "04 00 00 00 ..."   (for logging)
+std::string to_hex(const uint8_t* p, size_t n) {
+    std::string s;
+    char b[4];
+    for (size_t i = 0; i < n; ++i) { std::snprintf(b, sizeof b, "%02x ", p[i]); s += b; }
+    return s;
+}`],
+["2. Read the message type, then split text from game packets","Every ENet packet starts with a 4-byte little-endian message type. 2 and 3 are text lines (key|value). 4 is a 56-byte binary header (60 bytes with the message type) plus extra data.",`enum : uint32_t { SERVER_HELLO = 1, GENERIC_TEXT = 2, GAME_MESSAGE = 3, GAME_PACKET = 4 };
+
+#pragma pack(push, 1)
+struct GameHeader {                 // 56 bytes, sits right after the 4-byte message type
+    uint8_t  type, objectType, jumpCount, buildRange;  // offset 0..3
+    int32_t  netID;                 // 4   player in the world, or -1
+    int32_t  targetNetID;           // 8
+    int32_t  flags;                 // 12  0x08 = extra data follows
+    float    float_var;             // 16
+    int32_t  itemID;                // 20  18 = Fist, 32 = Wrench
+    float    posX, posY;            // 24, 28  pixels (1 tile = 32)
+    float    speedX, speedY;        // 32, 36
+    float    particleID;            // 40
+    int32_t  tileX, tileY;          // 44, 48
+    uint32_t extraLen;              // 52  bytes after the header
+};
+#pragma pack(pop)
+static_assert(sizeof(GameHeader) == 56, "header must be 56 bytes");
+
+#include <map>
+// "action|input\n|text|hello" -> {{"action","input"}, {"", ...}}  (first '|' splits key / value)
+std::map<std::string, std::string> parse_text(const std::string& t) {
+    std::map<std::string, std::string> kv;
+    std::istringstream in(t);
+    std::string line;
+    while (std::getline(in, line)) {
+        auto bar = line.find('|');
+        if (bar != std::string::npos) kv[line.substr(0, bar)] = line.substr(bar + 1);
+    }
+    return kv;
+}
+
+void handle(const uint8_t* d, size_t n) {
+    if (n < 4) return;
+    uint32_t msg;
+    std::memcpy(&msg, d, 4);                       // little-endian host assumed (x86 / ARM)
+    if (msg == GENERIC_TEXT || msg == GAME_MESSAGE) {
+        auto kv = parse_text(std::string((const char*)d + 4, n - 4));
+        if (kv["action"] == "enter_game") { /* send the world menu */ }
+    } else if (msg == GAME_PACKET && n >= 60) {
+        GameHeader h;
+        std::memcpy(&h, d + 4, sizeof h);           // memcpy is safe for unaligned data
+        const uint8_t* extra = d + 60;
+        size_t extraLen = n - 60;
+        if (h.type == 0x03) { /* TILE_CHANGE_REQUEST: tile (h.tileX, h.tileY), item h.itemID */ }
+        if (h.type == 0x01 && (h.flags & 0x08)) { /* CALL_FUNCTION: read variants from extra */ }
+        (void)extra; (void)extraLen;
+    }
+}`],
+["3. Read a variant list (CALL_FUNCTION extra data)","Layout: u8 count, then per entry: u8 index (0 = function name, 1.. = arguments), u8 type, data. Types: 1 float, 2 string (u32 length + bytes), 3 vec2, 4 vec3, 5 uint32, 9 int32.",`struct Variant { uint8_t idx, type; std::string s; float f[3]; int32_t i; };
+
+std::vector<Variant> read_variants(const uint8_t* p, size_t n) {
+    std::vector<Variant> out;
+    if (n < 1) return out;
+    size_t o = 1;                                   // p[0] = count
+    for (int k = 0; k < p[0] && o + 2 <= n; ++k) {
+        Variant v{};
+        v.idx = p[o]; v.type = p[o + 1]; o += 2;
+        if (o + 4 > n) return out;                  // every type needs at least 4 bytes
+        switch (v.type) {
+        case 2: {                                   // string
+            uint32_t len;
+            std::memcpy(&len, p + o, 4);
+            if (o + 4 + len > n) return out;
+            v.s.assign((const char*)p + o + 4, len);
+            o += 4 + len; break;
+        }
+        case 1: std::memcpy(&v.f[0], p + o, 4); o += 4; break;       // float
+        case 5: case 9: std::memcpy(&v.i, p + o, 4); o += 4; break;  // uint32 / int32
+        case 3: if (o + 8 > n) return out;  std::memcpy(v.f, p + o, 8);  o += 8;  break;  // vec2
+        case 4: if (o + 12 > n) return out; std::memcpy(v.f, p + o, 12); o += 12; break;  // vec3
+        default: return out;                        // unknown type: stop
+        }
+        out.push_back(v);
+    }
+    return out;
+}
+// variants[0].s is the function name, e.g. "OnConsoleMessage"`],
+["4. Build and send packets (what you do after decoding)","Decoding is only half of it. To answer, fill the same structures, then send the bytes on channel 0 with the RELIABLE flag.",`#include <enet/enet.h>
+
+void send_bytes(ENetPeer* peer, const std::vector<uint8_t>& b) {
+    ENetPacket* pkt = enet_packet_create(b.data(), b.size(), ENET_PACKET_FLAG_RELIABLE);
+    enet_peer_send(peer, 0, pkt);                   // channel 0. ENet owns pkt after this
+    std::printf("S>C %s\n", to_hex(b.data(), b.size()).c_str());   // log it for the Packet Tracker
+}
+
+// text message (msg = GENERIC_TEXT or GAME_MESSAGE)
+void send_text(ENetPeer* peer, uint32_t msg, const std::string& text) {
+    std::vector<uint8_t> b(4 + text.size());
+    std::memcpy(b.data(), &msg, 4);
+    std::memcpy(b.data() + 4, text.data(), text.size());
+    send_bytes(peer, b);
+}
+
+// GAME_PACKET = 4-byte message type + 56-byte header + extra data
+void send_game_packet(ENetPeer* peer, GameHeader h, const std::vector<uint8_t>& extra = {}) {
+    if (!extra.empty()) h.flags |= 0x08;            // S_EXTENDED
+    h.extraLen = (uint32_t)extra.size();
+    std::vector<uint8_t> b(60 + extra.size());
+    uint32_t msg = GAME_PACKET;
+    std::memcpy(b.data(), &msg, 4);
+    std::memcpy(b.data() + 4, &h, sizeof h);
+    if (!extra.empty()) std::memcpy(b.data() + 60, extra.data(), extra.size());
+    send_bytes(peer, b);
+}
+
+// CALL_FUNCTION: OnConsoleMessage("hello")
+void send_console(ENetPeer* peer, const std::string& text) {
+    std::vector<uint8_t> v;
+    auto put_str = [&](uint8_t idx, const std::string& s) {
+        v.push_back(idx); v.push_back(2);           // index, type 2 = string
+        uint32_t len = (uint32_t)s.size();
+        v.insert(v.end(), (uint8_t*)&len, (uint8_t*)&len + 4);
+        v.insert(v.end(), s.begin(), s.end());
+    };
+    v.push_back(2);                                 // variant count
+    put_str(0, "OnConsoleMessage");                 // 0 = function name
+    put_str(1, text);                               // 1.. = arguments
+    GameHeader h{};
+    h.type = 0x01; h.netID = -1;
+    send_game_packet(peer, h, v);
+}`],
+["5. Get raw hex from your own server","Log every packet in the ENet loop of your own server (or your own test client). Each line is one packet. Paste the lines into the Packet Tracker's capture log and analyze the whole session.",`ENetEvent ev;
+while (enet_host_service(host, &ev, 16) >= 0) {
+    if (ev.type == ENET_EVENT_TYPE_RECEIVE) {
+        std::printf("C>S %s\n", to_hex(ev.packet->data, ev.packet->dataLength).c_str());
+        handle(ev.packet->data, ev.packet->dataLength);
+        enet_packet_destroy(ev.packet);             // you own received packets
+    }
+}`],
+["6. Worked example: raw hex to a reply","This is the 60-byte TILE_CHANGE_REQUEST the Packet Tracker builds. Paste it into the decoder to see the fields. Then the server checks the tile and answers with 0x08 TILE_APPLY_DAMAGE.",`// raw hex from the log (reconstructed from the guide's layout, not a real capture):
+// ${WORKED}
+//
+// decoded:
+//   message type = 4 (GAME_PACKET)
+//   type = 0x03 TILE_CHANGE_REQUEST, netID = 7, itemID = 18 (Fist)
+//   pos = (672, 1152) px, tile = (25, 37), extraLen = 0
+
+auto bytes = from_hex(WORKED_HEX);
+GameHeader h;
+std::memcpy(&h, bytes.data() + 4, sizeof h);
+
+if (h.type == 0x03 && h.itemID == 18) {             // punching with the Fist
+    // 1) validate: is the tile in range, does it exist, is the player allowed?
+    // 2) update your world state (tile damage)
+    // 3) tell the players in that world:
+    GameHeader r{};
+    r.type = 0x08;                                  // TILE_APPLY_DAMAGE
+    r.buildRange = 6;                               // damage value (example)
+    r.netID = h.netID;
+    r.tileX = h.tileX; r.tileY = h.tileY;
+    for (ENetPeer* p : peers_in_world) send_game_packet(p, r);
+}`]
+];
+function renderCpp(o){
+ let h=`<p class="mute">No real captured traffic is included here. I can't capture from the real game, so the tracker's steps are rebuilt from the guide's documented layouts. To get real hex, log your own server or test client (snippet 5), paste the lines into the Packet Tracker's capture log, then follow the snippets below.</p><div class="sec">What to do after you have raw hex</div><div class="flow">${["1 hex text to bytes","2 read u32 message type","3 text? split key|value","4 GAME_PACKET? memcpy 56-byte header","5 type 0x01? read variant list","6 act on the type","7 build reply, enet_peer_send"].map(x=>`<span class="n">${x}</span>`).join('<span class="a">\u2192</span>')}</div>`;
+ CPP.forEach(c=>{h+=`<div class="card" style="margin-bottom:12px"><h3 style="font-family:inherit;color:var(--text);font-size:16px">${esc(c[0])}</h3><p class="desc">${esc(c[1])}</p><button class="btn" data-c>Copy</button><pre>${esc(c[2])}</pre></div>`});
+ o.innerHTML=h;
+ document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{try{navigator.clipboard.writeText(b.nextElementSibling.textContent);b.textContent="Copied"}catch(e){b.textContent="Select the code and copy"}});
+}
+let cur="struct", q="";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const hit=a=>!q||a.join(" ").toLowerCase().includes(q);
+
+function renderTabs(){
+  $("#tabs").innerHTML=tabs.map(t=>`<button class="tab ${t[0]===cur?"on":""}" data-t="${t[0]}">${t[1]}${t[2].length?`<small>${t[2].length}</small>`:""}</button>`).join("");
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{cur=b.dataset.t;render()});
+}
+function structCard(s){
+  const rows=s[4].map(f=>`<tr><td>${esc(f[0])}</td><td>${esc(f[1])}</td><td>${esc(f[2])}</td></tr>`).join("");
+  return `<div class="card" id="s-${esc(s[0].split(" ")[0])}"><h3>${esc(s[0])}</h3><span class="badge">${s[1]}</span><span class="mute">${s[2]}</span>
+  <p class="desc">${esc(s[3])}</p>${rows?`<div class="sc"><table>${rows}</table></div>`:""}</div>`;
+}
+function funcCard(f){
+  return `<div class="card"><h3>${esc(f[0])}</h3><span class="badge">${f[4]}</span>
+  <p class="desc">${esc(f[3])}</p><pre>${esc(f[1])} ${esc(f[0].split(" ")[0])}(${esc(f[2])});</pre></div>`;
+}
+function render(){
+  renderTabs();
+  clearInterval(window._tm);window._tm=null;const o=$("#out");
+  if(cur==="gtps"){renderGtps(o);return}
+  if(cur==="track"){renderTrack(o);return}
+  if(cur==="cpp"){renderCpp(o);return}
+  if(cur==="flow"){
+    const n=x=>`<span class="n">${x}</span>`, a=`<span class="a">→</span>`;
+    o.innerHTML=`<div class="sec">Server flow</div><div class="flow">${[ "enet_initialize","enet_host_create","enet_host_service (loop)","handle ENetEvent","enet_packet_destroy","enet_host_destroy","enet_deinitialize"].map(n).join(a)}</div>
+    <div class="sec">Client flow</div><div class="flow">${["enet_initialize","enet_host_create(NULL)","enet_host_connect","wait CONNECT event","enet_peer_send","enet_peer_disconnect","enet_host_destroy"].map(n).join(a)}</div>
+    <div class="sec">Ownership</div><div class="flow">${n("ENetHost")}${a}${n("ENetPeer[]")}${a}${n("ENetChannel[]")}${a}${n("Incoming / Outgoing commands")}${a}${n("ENetPacket")}</div>
+    <div class="sec">Peer state machine</div><div class="flow">${["DISCONNECTED","CONNECTING","ACKNOWLEDGING_CONNECT","CONNECTION_PENDING","CONNECTION_SUCCEEDED","CONNECTED","DISCONNECTING","ZOMBIE"].map(n).join(a)}</div>
+    <div class="sec">Minimal server example (commented)</div><div class="card"><pre>${esc(EXAMPLE)}</pre></div>`;
+    return;
+  }
+  let html="",items=[];
+  if(cur==="struct"){items=STRUCTS.filter(s=>hit([s[0],s[3],s[2],...s[4].flat()]));html=`<div class="grid">${items.map(structCard).join("")}</div>`}
+  if(cur==="func"){items=FUNCS.filter(f=>hit(f));
+    const groups=[...new Set(items.map(f=>f[4]))];
+    html=groups.map(g=>`<div class="sec">${g}</div><div class="grid">${items.filter(f=>f[4]===g).map(funcCard).join("")}</div>`).join("")}
+  if(cur==="file"){items=FILES.filter(hit);html=`<div class="grid">${items.map(f=>`<div class="card"><h3>${esc(f[0])}</h3><p class="desc">${esc(f[1])}</p></div>`).join("")}</div>`}
+  if(cur==="glob"){items=GLOBALS.filter(hit);html=`<div class="grid">${items.map(g=>`<div class="card"><h3>${esc(g[0])}</h3><span class="val">${esc(g[1])}</span><p class="desc">${esc(g[2])}</p></div>`).join("")}</div>`}
+  o.innerHTML=items.length?html:`<div class="empty">No matches.</div>`;
+}
+$("#q").addEventListener("input",e=>{q=e.target.value.toLowerCase().trim();if(cur==="flow"||cur==="track"||cur==="cpp")cur="struct";render()});
+render();
+</script>
+</body>
+</html>
